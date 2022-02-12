@@ -1,26 +1,85 @@
+/* eslint-disable no-loop-func */
 import axios from 'axios';
 import * as secrets from './secrets.js';
+import util from 'util';
 
 
 const ERROR_POSTS = [{ name: "API ERROR - NO CREDS LEFT", link: "" }];
+var cache = {};
 
 export const getTumblrData = async(searchQuery) => {
     try {
-        const apiResponse = await axios.get(`https://api.tumblr.com/v2/tagged?tag=${searchQuery}&api_key=${secrets.TUMBLR_API_KEY}&limit=1`, {
+        const name = 'Tumblr';
+        const link = 'https://www.tumblr.com/tagged/${searchQuery}?sort=top';
+        const posts = await getTumblrPosts(searchQuery);
+        return {
+            name: name,
+            link: link,
+            posts: posts,
+        };
+    } catch (error) {
+        console.log(error.message);
+        const name = 'Tumblr';
+        const link = 'https://www.tumblr.com/tagged/${searchQuery}?sort=top';
+        const posts = ERROR_POSTS;
+        return {
+            name: name,
+            link: link,
+            posts: posts,
+        };
+    }
+};
+
+const getTumblrPosts = async(searchQuery) => {
+    try {
+        // a list of description, urls for the top 100 most recent posts
+        let topPosts = [];
+        // for some reason, setting the sort search query to top returns you the 'recent' posts, so the 100 most recent are sorted by notes
+        let apiResponse = await axios.get(`https://api.tumblr.com/v2/tagged?tag=${searchQuery}&api_key=${secrets.TUMBLR_API_KEY}`, {
             headers: {
                 'Content-type': 'application/json'
             }
         });
 
-        // logs to the url to the top post for this search query
-        console.log(apiResponse.data.response[0].post_url);
+        // posts can only be grabbed 20 at a time, so in order to grab more, several get requests are made
+        for (let index = 0; index < 5; index++) {
+            if (apiResponse && apiResponse.data && apiResponse.data.response && apiResponse.data.response.length > 0) {
+                // find the earliest post
+                const posts = apiResponse.data.response;
+                const earliestTimestamp = posts[posts.length - 1].timestamp;
+                posts.forEach((currentPost) => {
+                    topPosts.push({
+                        name: currentPost.summary,
+                        link: currentPost.post_url,
+                        'note_count': currentPost.note_count
+                    });
+                });
+                apiResponse = await axios.get(`https://api.tumblr.com/v2/tagged?tag=${searchQuery}&before=${earliestTimestamp}&api_key=${secrets.TUMBLR_API_KEY}`, {
+                    headers: {
+                        'Content-type': 'applications/json'
+                    }
+                });
+            } else {
+                throw new Error('Could not retrieve posts from Tumblr');
+            }
+        }
+
+        topPosts = topPosts.sort((postA, postB) => postB['note_count'] - postA['note_count']).slice(0, 5);
+        topPosts = topPosts.map(currentPost => {
+            return {
+                name: currentPost.name,
+                link: currentPost.link,
+            };
+        });
+        return topPosts;
     } catch (error) {
         console.log(error.message);
     }
 };
 
 
-export const getRedditPosts = async(searchQuery) => {
+
+export const getRedditData = async(searchQuery) => {
     let formatted = {
         "name": "reddit",
         "link": `https://www.reddit.com/search/?q=${searchQuery}`,
@@ -50,7 +109,7 @@ export const getRedditPosts = async(searchQuery) => {
 }
 
 
-export const getYoutubePosts = async(searchQuery) => {
+export const getYoutubeData = async(searchQuery) => {
     let formatted = {
         "name": "YouTube",
         "link": `https://www.youtube.com/results?search_query=${searchQuery}`,
@@ -78,3 +137,25 @@ export const getYoutubePosts = async(searchQuery) => {
 
     return formatted;
 }
+
+const getData = async(sq) => {
+    let searchQuery = encodeURIComponent(sq);
+    if (!(searchQuery in cache)) {
+        let tumblr = getTumblrData(searchQuery);
+        let reddit = getRedditData(searchQuery);
+        let youtube = getYoutubeData(searchQuery);
+        [tumblr, reddit, youtube] = await Promise.all([tumblr, reddit, youtube]);
+        cache[searchQuery] = {
+            sites: [
+                tumblr,
+                reddit,
+                youtube
+            ]
+        }
+    }
+    return cache[searchQuery];
+}
+
+// Use util to print the whole object
+// Uncomment for fullt testing
+// console.log(util.inspect(await getData("Cardi B"), false, null, true))
