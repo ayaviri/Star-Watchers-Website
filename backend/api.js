@@ -1,6 +1,36 @@
 import axios from 'axios';
 import * as secrets from './secrets.js';
 
+export const getTwitterData = async (searchQuery) => {
+  try {
+    const name = 'Twitter';
+    const link = 'foo';
+    const posts = await getTwitterPosts(searchQuery);
+    return {
+      name: name,
+      link: link,
+      posts: posts,
+    };
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
+const getTwitterPosts = async (searchQuery) => {
+  try {
+    const apiResponse = await axios.get(`https://api.twitter.com/2/tweets/search/recent?query=${searchQuery}&sort_order=relevancy`, {
+      headers: {
+        'Content-type': 'application/json',
+        'Authorization': `Bearer ${secrets.TWITTER_BEARER_TOKEN}`
+      }
+    });
+
+    console.log(apiResponse.data.data);
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
 export const getTumblrData = async (searchQuery) => {
   try {
     const name = 'Tumblr';
@@ -84,4 +114,4 @@ export const getRedditPosts = async(searchQuery) => {
     }
 }
 
-
+getTwitterData('example');
