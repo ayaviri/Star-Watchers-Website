@@ -1,7 +1,6 @@
 import axios from 'axios';
 import * as secrets from './secrets.js';
 
-<<<<<<< HEAD
 export const getTumblrData = async (searchQuery) => {
   try {
     const name = 'Tumblr';
@@ -64,23 +63,6 @@ const getTumblrPosts = async (searchQuery) => {
   }
 };
 
-console.log(await getTumblrData('fnaf'));
-=======
-export const getTumblrData = async(searchQuery) => {
-    try {
-        const apiResponse = await axios.get(`https://api.tumblr.com/v2/tagged?tag=${searchQuery}&api_key=${secrets.TUMBLR_API_KEY}&limit=1`, {
-            headers: {
-                'Content-type': 'application/json'
-            }
-        });
-
-        // logs to the url to the top post for this search query
-        console.log(apiResponse.data.response[0].post_url);
-    } catch (error) {
-        console.log(error.message);
-    }
-};
-
 export const getRedditPosts = async(searchQuery) => {
     try {
         const apiResponse = await axios.get(`https://www.reddit.com/search.json?q=${searchQuery}&limit=5`, {
@@ -102,5 +84,4 @@ export const getRedditPosts = async(searchQuery) => {
     }
 }
 
-getTumblrData('fnaf');
->>>>>>> dae191945c5c013f18e66a939320177695ab296b
+
