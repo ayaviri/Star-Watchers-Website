@@ -7,16 +7,22 @@ const API_URL = "http://localhost:3000"
 class Graph extends React.Component{
 
   state = {
-    graphData: null,
+    q:null
   }
 
-  componentDidUpdate = (oldProps) => {
-    if (this.props.q.trim().length && (this.props.q !== this.state.q)) {
+  componentDidMount = () => {
+    this.setState({graphData: null});
+  }
+
+  componentDidUpdate = (nextProps) => {
+      const q1 = this.props.q;
+      const q2 = this.state.q;
+
+      if (q1 !== q2) {
       axios.get(`${API_URL}/search/googleTrends?q=${this.props.q}`, {
         headers: {
             'Content-type': 'application/json',
         }}).then(res => {
-          console.log(res)
           const data = res.data.map((item, i) => {
             return {x:i, y:item.value}
           })

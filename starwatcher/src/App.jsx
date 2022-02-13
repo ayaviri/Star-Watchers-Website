@@ -22,7 +22,6 @@ class App extends React.Component{
     headers: {
         'Content-type': 'application/json',
     }}).then(res => {
-    console.log(res.data)
     this.setState({"searchResult":res.data})
   })
 }
@@ -33,14 +32,12 @@ class App extends React.Component{
       headers: {
           'Content-type': 'application/json',
       }}).then(res => {
-      console.log(res.data.posts)
       this.setState({"trends":res.data.posts})
     })
   }
 
   getTrending() {
     if (this.state.trends != null) {
-      console.log("From GET", this.state.trends)
       return <Site name="Trending in the US" link="https://news.google.com/topstories?hl=en-US&gl=US&ceid=US" posts={this.state.trends}/> 
     }
     return "";
