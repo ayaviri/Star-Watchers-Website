@@ -56,7 +56,7 @@ const JSON_DATA = {
         ]
       },
       {
-        name: 'reddit',
+        name: 'Reddit',
         link: 'https://www.reddit.com/search/?q=fnaf',
         posts: [
           {
