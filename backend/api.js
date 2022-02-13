@@ -3,7 +3,7 @@ import axios from 'axios';
 import * as secrets from './secrets.js';
 import util from 'util';
 
-const ERROR_POSTS = [{ name: "API ERROR - NO CREDS LEFT", link: "" }];
+const ERROR_POSTS = [{ name: "API ERROR ⚠: THE API SERVICE USED FOR THIS FEATURE HAS RATE LIMITED US 😢", link: "" }];
 var cache = {};
 
 export const getTwitterData = async (searchQuery) => {
@@ -197,8 +197,31 @@ const getData = async(sq) => {
     return cache[searchQuery];
 }
 
+const getTrendingData = async() => {
+    var options = {
+        method: 'GET',
+        url: 'https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/search/TrendingNewsAPI',
+        params: { pageNumber: '1', pageSize: '10', withThumbnails: 'false', location: 'us' },
+        headers: {
+            'x-rapidapi-host': 'contextualwebsearch-websearch-v1.p.rapidapi.com',
+            'x-rapidapi-key': '6ba2f742b8msh573bc22a684d3d3p14c007jsn124150752c79'
+        }
+    };
+    try {
+        const apiResponse = await axios.request(options);
+        const articles = apiResponse.data.value.map(item => {
+            return {
+                name: item.title,
+                link: item.url
+            }
+        })
+        return { "posts": articles };
+    } catch (error) {
+        console.error(error);
+        return { "posts": ERROR_POSTS }
+    }
+}
+
 // Use util to print the whole object
 // Uncomment for fullt testing
 // console.log(util.inspect(await getData("Cardi B"), false, null, true))
-
-console.log(await getTwitterData('fnaf'));
