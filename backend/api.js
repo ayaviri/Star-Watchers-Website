@@ -4,7 +4,14 @@ import * as StringUtils from './string-utils.js';
 import googleTrends from 'google-trends-api';
 import express from 'express';
 import cors from 'cors';
+import * as path from 'path';
 
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(
+    import.meta.url);
+const __dirname = dirname(__filename);
 
 const ERROR_POSTS = [{ name: "API ERROR ⚠: THE API SERVICE USED FOR THIS FEATURE HAS RATE LIMITED US 😢", link: "" }];
 var cache = {};
@@ -311,7 +318,6 @@ const getGoogleTrends = async(searchQuery) => {
         })
 }
 
-await getTwitterPosts('olympics');
 
 const app = express()
 const port = 3000
@@ -327,8 +333,11 @@ var corsMiddleware = function(req, res, next) {
 
 app.use(corsMiddleware);
 
+const buildPath = path.normalize(path.join(__dirname, './build'));
+app.use(express.static(buildPath));
+
 app.get('/', (req, res) => {
-    res.send('Hello World!')
+    res.sendFile(path.join(buildPath, 'index.html'));
 })
 
 app.get('/search/googleTrends', (req, res) => {
