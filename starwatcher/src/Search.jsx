@@ -6,7 +6,7 @@ class Search extends Component {
     };
 
     getInput = (val) => {
-        console.log(val.target.value);
+        // console.log(val.target.value);
         this.setState({ value: val.target.value });
     }
 

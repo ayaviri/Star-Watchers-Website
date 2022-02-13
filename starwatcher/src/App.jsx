@@ -10,12 +10,14 @@ const API_URL = "http://localhost:3000"
 class App extends React.Component{
   
   state = {
+    query: null,
     searchResult: null,
     trends: null
   }
   
   handleResult = (q) => {
   // Get the trending data US
+  this.setState({'query': q})
   axios.get(`${API_URL}/search/data?q=${q}`, {
     headers: {
         'Content-type': 'application/json',
@@ -49,8 +51,9 @@ class App extends React.Component{
       <div className='container'>
         <Search handleResult={this.handleResult} />
         { this.state.searchResult ?  
-        <Results sites = {this.state.searchResult["sites"]} /> :
+        <Results sites = {this.state.searchResult["sites"]} q = {this.state.query} /> :
         this.getTrending()}
+        
       </div>
     );
   }

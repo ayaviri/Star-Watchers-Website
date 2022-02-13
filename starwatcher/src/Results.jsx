@@ -6,7 +6,7 @@ class Results extends React.Component {
   render() { 
     return (
       <div className = "App-result-container">
-          <Graph />
+          <Graph q={this.props.q} />
           <h2> Results:</h2>
           { this.props.sites.map((site) => {
             return <Site name={site.name} link={site.link} posts={site.posts} key={site.link} />

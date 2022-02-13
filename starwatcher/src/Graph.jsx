@@ -1,20 +1,40 @@
 import React from 'react';
+import '../node_modules/react-vis/dist/style.css';
+import {XYPlot, LineSeries, XAxis, YAxis, HorizontalGridLines, VerticalGridLines} from 'react-vis';
+import axios from 'axios';
 
+const API_URL = "http://localhost:3000"
 class Graph extends React.Component{
 
   state = {
-    searchResult: 'fnaf',
+    graphData: null,
   }
 
-  handleResult = (result) => {
-    this.setState({ "searchResult": result });
+  componentDidUpdate = (oldProps) => {
+    if (this.props.q.trim().length && (this.props.q !== this.state.q)) {
+      axios.get(`${API_URL}/search/googleTrends?q=${this.props.q}`, {
+        headers: {
+            'Content-type': 'application/json',
+        }}).then(res => {
+          console.log(res)
+          const data = res.data.map((item, i) => {
+            return {x:i, y:item.value}
+          })
+          this.setState({"graphData":data, "q":this.props.q});
+        })
+    }
   }
 
   render() {
     return (
       <div className='container'>
-        {/* <Search handleResult={this.handleResult} /> */}
-        {/* { this.state.searchResult &&  <Results sites = {this.state.searchResult["sites"]} /> } */}
+        <h3>Search Frequency in the Past Year</h3>
+        { this.state.graphData &&  
+        <XYPlot height={300} width={600}>
+          <HorizontalGridLines />
+          <VerticalGridLines />
+          <LineSeries data={this.state.graphData} />
+        </XYPlot> } 
       </div>
     );
   }
