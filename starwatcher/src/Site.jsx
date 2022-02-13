@@ -7,41 +7,46 @@ import { FaPaperclip, FaYoutube, FaReddit, FaTumblr, FaTwitter, FaMusic } from "
 import { IconContext } from 'react-icons/lib';
 
 class Site extends Component {
-    render() { 
+    render() {
         return (<div>
-            <IconContext.Provider value ={{ color: "cornflowerblue"}}>
-            <Card>
-                <Card.Header>
-            <Card.Body><h3 style={{display: 'flex',  justifyContent:'center', alignItems:'center'}}><a href={this.props.link}><FaPaperclip/></a>ㅤ{this.props.name}ㅤ
-            {this.nameSwitch(this.props.name)}</h3> </Card.Body>
-            </Card.Header>
-            <ListGroup.Item> 
-            <ul>{ this.props.posts.map(post => {
-                return <Post name={post.name} link={post.link} key={post.link} />;
-            }) }
-            </ul>
-            </ListGroup.Item>
-            </Card>
+            <IconContext.Provider value={{ color: "cornflowerblue" }}>
+                <Card>
+                    <Card.Header>
+                        <Card.Body>
+                            <h3 className="hoverable-link" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <a href={this.props.link}><FaPaperclip /></a>ㅤ
+                                <span style={{ "marginRight": "10px", "marginLeft": "10px" }}>{this.props.name}</span>ㅤ
+                                <span>{this.nameSwitch(this.props.name)}</span>
+                            </h3> 
+                            </Card.Body>
+                    </Card.Header>
+                    <ListGroup.Item>
+                        <ul>{this.props.posts.map(post => {
+                            return <Post name={post.name} link={post.link} key={post.link} />;
+                        })}
+                        </ul>
+                    </ListGroup.Item>
+                </Card>
             </IconContext.Provider>
         </div>);
     }
 
     nameSwitch(name) {
-        switch(name) {
+        switch (name) {
             case 'YouTube':
-                return <IconContext.Provider value ={{ color: "red"}}>< FaYoutube className="d-flex justify-content-between"/></IconContext.Provider>;
+                return <IconContext.Provider value={{ color: "red" }}>< FaYoutube className="d-flex justify-content-between" /></IconContext.Provider>;
             case 'Reddit':
-                return <IconContext.Provider value ={{ color: "red"}}>< FaReddit className="d-flex justify-content-between"/></IconContext.Provider>;
+                return <IconContext.Provider value={{ color: "red" }}>< FaReddit className="d-flex justify-content-between" /></IconContext.Provider>;
             case 'Tumblr':
-                return < FaTumblr className="d-flex justify-content-between"/>;
+                return < FaTumblr className="d-flex justify-content-between" />;
             case 'Genius':
-                return <IconContext.Provider value ={{ color: "black"}}>< FaMusic className="d-flex justify-content-between"/></IconContext.Provider>;
+                return <IconContext.Provider value={{ color: "black" }}>< FaMusic className="d-flex justify-content-between" /></IconContext.Provider>;
             case 'Twitter':
                 return < FaTwitter />;
             default:
-                return <IconContext.Provider value ={{ color: "cornflowerblue"}}>< FaPaperclip className="d-flex justify-content-between"/></IconContext.Provider>;
+                return <IconContext.Provider value={{ color: "cornflowerblue" }}>< FaPaperclip className="d-flex justify-content-between" /></IconContext.Provider>;
         }
     }
 }
- 
+
 export default Site;
