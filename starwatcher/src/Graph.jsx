@@ -1,5 +1,4 @@
 import React from 'react';
-// import * as API from './backend/api.js';
 
 class Graph extends React.Component{
 

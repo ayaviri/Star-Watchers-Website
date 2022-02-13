@@ -1,9 +1,8 @@
 import axios from 'axios';
 import * as secrets from './secrets.js';
-import util from 'util';
 import * as StringUtils from './string-utils.js';
 import googleTrends from 'google-trends-api';
-import { time } from 'console';
+import express from 'express';
 
 const ERROR_POSTS = [{ name: "API ERROR ⚠: THE API SERVICE USED FOR THIS FEATURE HAS RATE LIMITED US 😢", link: "" }];
 var cache = {};
@@ -304,5 +303,40 @@ const getGoogleTrends = async(searchQuery) => {
         })
 }
 
-// console.log(googleTrends);
-getGoogleTrends("ff");
+const app = express()
+const port = 3000
+
+app.get('/', (req, res) => {
+    res.send('Hello World!')
+})
+
+app.get('/search/googleTrends', (req, res) => {
+    let query = req.query.q;
+    getGoogleTrends(query).then(r => {
+        res.send(r)
+    }).catch(err => {
+        res.status(503)
+        res.send("Server Out of API credits")
+    })
+})
+app.get('/search/data', (req, res) => {
+    let query = req.query.q;
+    getData(query).then(r => {
+        res.send(r)
+    }).catch(err => {
+        res.status(503)
+        res.send("Server Out of API credits")
+    })
+})
+app.get('/trends', (req, res) => {
+    getTrendingData().then(r => {
+        res.send(r)
+    }).catch(err => {
+        res.status(503)
+        res.send("Server Out of API credits")
+    })
+})
+
+app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`)
+})

@@ -4,7 +4,6 @@ import Search from './Search.jsx';
 import Results from './Results.jsx';
 // import Container  from 'react-bootstrap/Container';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import * as API from './backend/api.js';
 
 class App extends React.Component{
   
