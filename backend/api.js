@@ -1,9 +1,10 @@
 import axios from 'axios';
 import * as secrets from './secrets.js';
-import util from 'util';
 import * as StringUtils from './string-utils.js';
 import googleTrends from 'google-trends-api';
-import { time } from 'console';
+import express from 'express';
+import cors from 'cors';
+
 
 const ERROR_POSTS = [{ name: "API ERROR ⚠: THE API SERVICE USED FOR THIS FEATURE HAS RATE LIMITED US 😢", link: "" }];
 var cache = {};
@@ -92,10 +93,11 @@ const getTwitterPosts = async(searchQuery) => {
                 const text = textAsList.join(' ');
                 posts.push({
                     name: text,
-                    link: post_url,
+                    link: `https://twitter.com/twitter/status/${currentPost.id}`,
                 });
             });
 
+            console.log(posts);
             return posts;
         } else {
             throw new Error('Could not retrieve posts from Twitter');
@@ -252,28 +254,32 @@ const getData = async(sq) => {
 }
 
 const getTrendingData = async() => {
-    var options = {
-        method: 'GET',
-        url: 'https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/search/TrendingNewsAPI',
-        params: { pageNumber: '1', pageSize: '10', withThumbnails: 'false', location: 'us' },
-        headers: {
-            'x-rapidapi-host': 'contextualwebsearch-websearch-v1.p.rapidapi.com',
-            'x-rapidapi-key': '6ba2f742b8msh573bc22a684d3d3p14c007jsn124150752c79'
-        }
-    };
-    try {
-        const apiResponse = await axios.request(options);
-        const articles = apiResponse.data.value.map(item => {
-            return {
-                name: item.title,
-                link: item.url
+    if (!("___TRENDING___" in cache)) {
+        var options = {
+            method: 'GET',
+            url: 'https://contextualwebsearch-websearch-v1.p.rapidapi.com/api/search/TrendingNewsAPI',
+            params: { pageNumber: '1', pageSize: '10', withThumbnails: 'false', location: 'us' },
+            headers: {
+                'x-rapidapi-host': 'contextualwebsearch-websearch-v1.p.rapidapi.com',
+                'x-rapidapi-key': '6ba2f742b8msh573bc22a684d3d3p14c007jsn124150752c79'
             }
-        })
-        return { "posts": articles };
-    } catch (error) {
-        console.error(error);
-        return { "posts": ERROR_POSTS }
+        };
+        try {
+            const apiResponse = await axios.request(options);
+            const articles = apiResponse.data.value.map(item => {
+                return {
+                    name: item.title,
+                    link: item.url
+                }
+            })
+            cache["___TRENDING___"] = { "posts": articles }
+            return { "posts": articles };
+        } catch (error) {
+            console.error(error);
+            return { "posts": ERROR_POSTS }
+        }
     }
+    return cache["___TRENDING___"];
 }
 
 // Use util to print the whole object
@@ -284,7 +290,7 @@ const getTrendingData = async() => {
 const getGoogleTrends = async(searchQuery) => {
     let yearAgo = new Date()
     yearAgo.setFullYear(yearAgo.getFullYear() - 1);
-    const trend = googleTrends.interestOverTime({
+    return googleTrends.interestOverTime({
             keyword: searchQuery,
             startTime: yearAgo
         }).then(function(results) {
@@ -297,12 +303,61 @@ const getGoogleTrends = async(searchQuery) => {
                     value: point.hasData[0] ? point.value[0] : 0,
                 }
             })
-            console.log(points); //Object.keys(results));
+            return points;
         })
         .catch(function(err) {
             console.error('Oh no there was an error', err);
+            return {}
         })
 }
 
-// console.log(googleTrends);
-getGoogleTrends("ff");
+await getTwitterPosts('olympics');
+
+const app = express()
+const port = 3000
+
+app.use('*', cors());
+var corsMiddleware = function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', 'localhost'); //replace localhost with actual host
+    res.header('Access-Control-Allow-Methods', 'OPTIONS, GET, PUT, PATCH, POST, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With, Authorization');
+
+    next();
+}
+
+app.use(corsMiddleware);
+
+app.get('/', (req, res) => {
+    res.send('Hello World!')
+})
+
+app.get('/search/googleTrends', (req, res) => {
+    let query = req.query.q;
+    getGoogleTrends(query).then((r) => {
+        res.send(r)
+    }).catch((err) => {
+        res.status(503)
+        res.send("Server Out of API credits")
+    })
+})
+app.get('/search/data', (req, res) => {
+    let query = req.query.q;
+    getData(query).then(r => {
+        res.send(r)
+    }).catch(err => {
+        res.status(503)
+        res.send("Server Out of API credits")
+    })
+})
+app.get('/trends', (req, res) => {
+    getTrendingData().then(r => {
+        res.send(r)
+    }).catch(err => {
+        res.status(503)
+        res.send("Server Out of API credits")
+    })
+})
+
+app.listen(port, () => {
+    console.log(`Example app listening on port ${port}`)
+})

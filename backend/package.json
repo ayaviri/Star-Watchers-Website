@@ -1,0 +1,18 @@
+{
+    "type": "module",
+    "name": "backend",
+    "version": "1.0.0",
+    "description": "hackbeanpot 2022 backend for apis",
+    "main": "api.js",
+    "scripts": {
+        "test": "node api.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "axios": "^0.25.0",
+        "cors": "^2.8.5",
+        "express": "^4.17.2",
+        "google-trends-api": "^4.9.2"
+    }
+}
