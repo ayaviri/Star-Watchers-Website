@@ -1,0 +1,26 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: sans-serif, monospace;
+}
+
+button {
+  height: 35px;
+  width: 130px;
+  background-color: #282c34;
+  color: white;
+  font-family: sans-serif;
+  font-size: 20px;
+}
+
+input {
+  height: 30px;
+  width: 200px;
+  font-family: sans-serif;
+  font-size: 20px;
+}

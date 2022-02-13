@@ -1,6 +1,5 @@
 {
-  "type": "module",
-  "name": "star-watchers-app",
+  "name": "starwatcher",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
