@@ -2,124 +2,126 @@ import axios from 'axios';
 import * as secrets from './secrets.js';
 import util from 'util';
 import * as StringUtils from './string-utils.js';
+import googleTrends from 'google-trends-api';
+import { time } from 'console';
 
 const ERROR_POSTS = [{ name: "API ERROR ⚠: THE API SERVICE USED FOR THIS FEATURE HAS RATE LIMITED US 😢", link: "" }];
 var cache = {};
 
-export const getGeniusData = async (searchQuery) => {
-  const name = 'Genius';
-  const link = `https://genius.com/search?q=${StringUtils.encodeSpaceIntoQuery(searchQuery)}`;
-  try {
-    return {
-      name: name, 
-      link: link,
-      posts: await getGeniusHits(searchQuery),
-    };
-  } catch (error) {
-    console.log(error.message);
-    return {
-      name: name,
-      link: link,
-      posts: ERROR_POSTS,
-    };
-  }
-};
-
-const getGeniusHits = async (searchQuery) => {
-  try {
-    const apiResponse = await axios.get(`https://api.genius.com/search?q=${StringUtils.encodeSpaceIntoQuery(searchQuery)}`, {
-      headers: {
-        'Content-type': 'application/json',
-        'Authorization': `Bearer ${secrets.GENIUS_CLIENT_ACCESS_TOKEN}`
-      }
-    });
-
-    if (apiResponse && apiResponse.data && apiResponse.data.response && apiResponse.data.response.hits && apiResponse.data.response.hits.length > 0) {
-      let hits = apiResponse.data.response.hits;
-      hits.sort((hitA, hitB) => {
-        return hitB.result.pyongs_count - hitA.result.pyongs_count;
-      });
-      hits = hits.map((currentHit) => {
+export const getGeniusData = async(searchQuery) => {
+    const name = 'Genius';
+    const link = `https://genius.com/search?q=${StringUtils.encodeSpaceIntoQuery(searchQuery)}`;
+    try {
         return {
-          name: currentHit.result.full_title, 
-          link: currentHit.result.url,
+            name: name,
+            link: link,
+            posts: await getGeniusHits(searchQuery),
         };
-      });
-      return hits.slice(0, 5);
-    } else {
-      throw new Error('Could not retrieve hits from Genius');
+    } catch (error) {
+        console.log(error.message);
+        return {
+            name: name,
+            link: link,
+            posts: ERROR_POSTS,
+        };
     }
-  } catch (error) {
-
-  }
 };
 
-export const getTwitterData = async (searchQuery) => {
-  const name = 'Twitter';
-  const link = `https://twitter.com/search?lang=en&q=(%23${StringUtils.encodeSpaceIntoQuery(searchQuery)})&src=typed_query`
-  try {
-    return {
-      name: name,
-      link: link,
-      posts: await getTwitterPosts(searchQuery),
-    };
-  } catch (error) {
-    console.log(error.message);
-    return {
-      name: name,
-      link: link,
-      posts: ERROR_POSTS,
-    };
-  }
-};
-
-const getTwitterPosts = async (searchQuery) => {
-  try {
-    const posts = [];
-    const apiResponse = await axios.get(`https://api.twitter.com/2/tweets/search/recent?query=${StringUtils.encodeSpaceIntoQuery(searchQuery)}&sort_order=relevancy`, {
-      headers: {
-        'Content-type': 'application/json',
-        'Authorization': `Bearer ${secrets.TWITTER_BEARER_TOKEN}`
-      }
-    });
-
-    if (apiResponse && apiResponse.data && apiResponse.data.data && apiResponse.data.data.length > 0) {
-      apiResponse.data.data.forEach((currentPost) => {
-        const textAsList = currentPost.text.split(' ');
-        const post_url = textAsList.pop();
-        const text = textAsList.join(' ');
-        posts.push({
-          name: text,
-          link: post_url,
+const getGeniusHits = async(searchQuery) => {
+    try {
+        const apiResponse = await axios.get(`https://api.genius.com/search?q=${StringUtils.encodeSpaceIntoQuery(searchQuery)}`, {
+            headers: {
+                'Content-type': 'application/json',
+                'Authorization': `Bearer ${secrets.GENIUS_CLIENT_ACCESS_TOKEN}`
+            }
         });
-      });
 
-      return posts;
-    } else {
-      throw new Error('Could not retrieve posts from Twitter');
+        if (apiResponse && apiResponse.data && apiResponse.data.response && apiResponse.data.response.hits && apiResponse.data.response.hits.length > 0) {
+            let hits = apiResponse.data.response.hits;
+            hits.sort((hitA, hitB) => {
+                return hitB.result.pyongs_count - hitA.result.pyongs_count;
+            });
+            hits = hits.map((currentHit) => {
+                return {
+                    name: currentHit.result.full_title,
+                    link: currentHit.result.url,
+                };
+            });
+            return hits.slice(0, 5);
+        } else {
+            throw new Error('Could not retrieve hits from Genius');
+        }
+    } catch (error) {
+
     }
-  } catch (error) {
-    console.log(error.message);
-  }
+};
+
+export const getTwitterData = async(searchQuery) => {
+    const name = 'Twitter';
+    const link = `https://twitter.com/search?lang=en&q=(%23${StringUtils.encodeSpaceIntoQuery(searchQuery)})&src=typed_query`
+    try {
+        return {
+            name: name,
+            link: link,
+            posts: await getTwitterPosts(searchQuery),
+        };
+    } catch (error) {
+        console.log(error.message);
+        return {
+            name: name,
+            link: link,
+            posts: ERROR_POSTS,
+        };
+    }
+};
+
+const getTwitterPosts = async(searchQuery) => {
+    try {
+        const posts = [];
+        const apiResponse = await axios.get(`https://api.twitter.com/2/tweets/search/recent?query=${StringUtils.encodeSpaceIntoQuery(searchQuery)}&sort_order=relevancy`, {
+            headers: {
+                'Content-type': 'application/json',
+                'Authorization': `Bearer ${secrets.TWITTER_BEARER_TOKEN}`
+            }
+        });
+
+        if (apiResponse && apiResponse.data && apiResponse.data.data && apiResponse.data.data.length > 0) {
+            apiResponse.data.data.forEach((currentPost) => {
+                const textAsList = currentPost.text.split(' ');
+                const post_url = textAsList.pop();
+                const text = textAsList.join(' ');
+                posts.push({
+                    name: text,
+                    link: post_url,
+                });
+            });
+
+            return posts;
+        } else {
+            throw new Error('Could not retrieve posts from Twitter');
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
 };
 
 export const getTumblrData = async(searchQuery) => {
-  const name = 'Tumblr';
-  const link = `https://www.tumblr.com/tagged/${StringUtils.encodeSpaceIntoQuery(searchQuery)}?sort=top`;
-  try {
-    return {
-      name: name,
-      link: link,
-      posts: await getTumblrPosts(searchQuery),
-    };
-  } catch (error) {
-    console.log(error.message);
-    return {
-      name: name,
-      link: link,
-      posts: ERROR_POSTS,
-    };
-  }
+    const name = 'Tumblr';
+    const link = `https://www.tumblr.com/tagged/${StringUtils.encodeSpaceIntoQuery(searchQuery)}?sort=top`;
+    try {
+        return {
+            name: name,
+            link: link,
+            posts: await getTumblrPosts(searchQuery),
+        };
+    } catch (error) {
+        console.log(error.message);
+        return {
+            name: name,
+            link: link,
+            posts: ERROR_POSTS,
+        };
+    }
 };
 
 const getTumblrPosts = async(searchQuery) => {
@@ -198,7 +200,7 @@ export const getRedditData = async(searchQuery) => {
     return formatted;
 }
 
-export const getYoutubeData = async (searchQuery) => {
+export const getYoutubeData = async(searchQuery) => {
     let formatted = {
         "name": "YouTube",
         "link": `https://www.youtube.com/results?search_query=${StringUtils.encodeSpaceIntoQuery(searchQuery)}`,
@@ -240,8 +242,8 @@ const getData = async(sq) => {
             sites: [
                 tumblr,
                 reddit,
-                youtube, 
-                genius, 
+                youtube,
+                genius,
                 twitter
             ]
         }
@@ -276,4 +278,31 @@ const getTrendingData = async() => {
 
 // Use util to print the whole object
 // Uncomment for fullt testing
-console.log(util.inspect(await getData("fnaf"), false, null, true))
+// console.log(util.inspect(await getData("fnaf"), false, null, true))
+
+
+const getGoogleTrends = async(searchQuery) => {
+    let yearAgo = new Date()
+    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+    const trend = googleTrends.interestOverTime({
+            keyword: searchQuery,
+            startTime: yearAgo
+        }).then(function(results) {
+            results = JSON.parse(results);
+            const points = results.default.timelineData.map((point) => {
+                return {
+                    time: point.time,
+                    formattedTime: point.formattedTime,
+                    formattedAxisTime: point.formattedAxisTime,
+                    value: point.hasData[0] ? point.value[0] : 0,
+                }
+            })
+            console.log(points); //Object.keys(results));
+        })
+        .catch(function(err) {
+            console.error('Oh no there was an error', err);
+        })
+}
+
+// console.log(googleTrends);
+getGoogleTrends("ff");
