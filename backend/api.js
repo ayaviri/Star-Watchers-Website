@@ -93,10 +93,11 @@ const getTwitterPosts = async(searchQuery) => {
                 const text = textAsList.join(' ');
                 posts.push({
                     name: text,
-                    link: post_url,
+                    link: `https://twitter.com/twitter/status/${currentPost.id}`,
                 });
             });
 
+            console.log(posts);
             return posts;
         } else {
             throw new Error('Could not retrieve posts from Twitter');
@@ -309,6 +310,8 @@ const getGoogleTrends = async(searchQuery) => {
             return {}
         })
 }
+
+await getTwitterPosts('olympics');
 
 const app = express()
 const port = 3000
